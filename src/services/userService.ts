@@ -97,14 +97,14 @@ export async function attemptToRegisterUser(userData: IUser) : Promise<any> {
     const checkedCredentials: any = checkCredentials(userData);
 
 
-    if (!checkedCredentials || !checkedCredentials.name) {
+    if (!checkedCredentials || !checkedCredentials.name || !checkedCredentials.email || !checkedCredentials.password) {
         return { status: 400, message: 'Email, senha e nome são obrigatórios.' };
     }
 
-    const existingUser = await db.users.findOne({ email: checkedCredentials.email });
+    const existingUser = await findUserByEmail(checkedCredentials.email, false);
 
     if (existingUser) {
-        return { status: 409, message: 'Email já está em uso' };
+        return { status: 409, message: existingUser.email + ' já está em uso.' };
     }
 
     
