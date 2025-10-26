@@ -54,7 +54,7 @@ export async function createTask(userID:number, task: ITask): Promise<any> {
 
         console.log("task", task);
 
-        const newTask = await db.tasks.create({ 
+        await db.tasks.create({ 
             title: task.title, 
             description: task.description, 
             userId: userID,
@@ -62,7 +62,13 @@ export async function createTask(userID:number, task: ITask): Promise<any> {
             deleted: false
         });
         
-        return { status: 201, task: newTask };
+        return { status: 201, task: {            
+            title: task.title, 
+            description: task.description, 
+            userId: userID,
+            completed: false,
+            deleted: false
+        }};
 
     } catch (error) {
         console.error(error);
