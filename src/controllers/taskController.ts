@@ -51,7 +51,7 @@ export const GetTaskById = async (req: Request, res: Response, next: NextFunctio
             return res.status(400).json({ message: 'ID do usuário e ID da tarefa são obrigatórios ou estão inválidos.' });
         }
 
-        const result = await taskService.getTasksById(taskId, userId);
+        const result = await taskService.getTasksById(Number(taskId), userId);
         res.status(result.status).json(result);
     }
     catch (error) {
@@ -80,8 +80,8 @@ export const FullUpdateTask = async (req: Request, res: Response, next: NextFunc
                 return  res.status(400).json({ message: 'Todos os campos (title, description, completed) são obrigatórios para atualização completa.' });
                 
         }
-            
-        const result = await taskService.updateTask(taskId, userId, updateData);        
+
+        const result = await taskService.updateTask(Number(taskId), userId, updateData);
         res.status(result.status).json(result);
     
     } catch (error) {
@@ -109,7 +109,7 @@ export const PartialUpdateTask = async (req: Request, res: Response, next: NextF
 
         }
 
-        const result = await taskService.updateTask(taskId, userId, updateData);
+        const result = await taskService.updateTask(Number(taskId), userId, updateData);
         
         res.status(result.status).json(result);
     
@@ -128,7 +128,7 @@ export const DeleteTask = async (req: Request, res: Response, next: NextFunction
             return res.status(400).json({ message: 'ID do usuário e ID da tarefa são obrigatórios.' });
         }
 
-        const result = await taskService.deleteTask(taskId, userId);
+        const result = await taskService.deleteTask(Number(taskId), userId);
         res.status(result.status).json(result);
     
     } catch (error) {
@@ -144,8 +144,8 @@ export const restoreTask = async (req: Request, res: Response, next: NextFunctio
         if (!userId || !taskId) {
             return res.status(400).json({ message: 'ID do usuário e ID da tarefa são obrigatórios.' });
         }
-        
-        const result = await taskService.restoreTask(taskId, userId);
+
+        const result = await taskService.restoreTask(Number(taskId), userId);
         res.status(result.status).json(result);
     
     } catch (error) {
