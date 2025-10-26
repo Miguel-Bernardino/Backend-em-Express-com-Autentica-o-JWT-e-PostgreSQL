@@ -84,7 +84,7 @@ export async function attemptToLogUser(userCredentials: IUser) : Promise<any> {
     return { 
         status: 200,
         token, 
-        user: {
+        userData: {
             id: checkedUser.id,
             name: checkedUser.name,
             email: checkedUser.email,
@@ -112,21 +112,19 @@ export async function attemptToRegisterUser(userData: IUser) : Promise<any> {
         return { status: 400, message: 'A senha deve ter pelo menos 6 caracteres.' };
     }
 
-    const newUser = db.users.create({
+    const newUser = await db.users.create({
         name: checkedCredentials.name,
         email: checkedCredentials.email,
         password: await createPasswordHash(checkedCredentials.password),
     });
+
+    console.log("newUser", newUser.id);
 
     const token = createJwtToken(newUser.id, newUser.email);
 
     return { 
         status: 200,
         token, 
-        user: {
-            id: newUser.id,
-            name: newUser.name,
-            email: newUser.email,
-        } 
+        userData: newUser
     };
 }
