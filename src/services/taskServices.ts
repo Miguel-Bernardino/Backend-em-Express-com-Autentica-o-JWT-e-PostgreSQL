@@ -15,7 +15,7 @@ async function isUserExists(userId: number): Promise<any> {
     return user;
 }
 
-async function isValidUser(taskId: number, userTokenedId: number): Promise<any> {
+async function isValidUserByTaskId(taskId: number, userTokenedId: number): Promise<any> {
     
     const task = await findTaskByFilters({ id: taskId });
     
@@ -39,11 +39,27 @@ async function isValidUser(taskId: number, userTokenedId: number): Promise<any> 
 
 }
 
+async function isValidUser(userId: number, userTokenedId: number): Promise<any> {
+
+    //const taskUser = await findTaskByFilters({ userId: task[0].userId });
+    if(userTokenedId !== userId){
+        return { status: 403, message: 'Acesso negado à tarefa.' };
+    }   
+    const user = await findTaskByFilters({ id: userTokenedId });
+
+    if(!user){
+        return { status: 404, message: 'Usuário não encontrado.' };
+    }
+
+    return { status: 200, user};
+
+}
+
 export async function createTask(userID:number, task: ITask): Promise<any> { 
     try {
 
 
-        const user = await isUserExists(userID);
+        const user= await isValidUser(userID, task.userId);
 
         if(!user || user.status >= 400){
             return { status: 403, message: 'Usuário inválido.' };
@@ -54,21 +70,15 @@ export async function createTask(userID:number, task: ITask): Promise<any> {
 
         console.log("task", task);
 
-        await db.tasks.create({ 
+        const newTask = await db.tasks.create({ 
             title: task.title, 
             description: task.description, 
-            userId: userID,
+            userId: task.userId,
             completed: false,
             deleted: false
         });
-        
-        return { status: 201, task: {            
-            title: task.title, 
-            description: task.description, 
-            userId: userID,
-            completed: false,
-            deleted: false
-        }};
+
+        return { status: 201, task: newTask };
 
     } catch (error) {
         console.error(error);
@@ -90,8 +100,8 @@ export const getTasksByUserId = async (userId: number, filters: any): Promise<an
         if (!tasks || tasks.length === 0) {
             return { status: 404, message: 'Tarefas não encontradas.' };
         }
-        
-        const validUser = await isValidUser(tasks[0]?.id, userId);
+
+        const validUser = await isValidUserByTaskId(tasks[0]?.id, userId);
 
         if(!validUser || validUser.status >= 400){
             return { status: 403, message: 'Usuário inválido.' };
@@ -114,8 +124,8 @@ export const getTasksById = async (taskId: number, userId: number): Promise<any>
         if(!task){
             return { status: 404, message: 'Tarefa não encontrada.' };
         }
-        
-        const validUser = await isValidUser(task[0].id, userId);
+
+        const validUser = await isValidUserByTaskId(task[0].id, userId);
 
         if(!validUser || validUser.status >= 400){
             return { status: 403, message: 'Usuário inválido.' };
@@ -140,8 +150,8 @@ export const updateTask = async (taskId: number, userId: number, updateData: Par
         if(!task){
             return { status: 404, message: 'Tarefa não encontrada.' };
         }
-        
-        const validUser = await isValidUser(task[0].id, userId);
+
+        const validUser = await isValidUserByTaskId(task[0].id, userId);
 
         if(!validUser || validUser.status >= 400){
             return { status: 403, message: 'Usuário inválido.' };
@@ -172,7 +182,7 @@ export const deleteTask = async (taskId: number, userId: number): Promise<any> =
             return { status: 404, message: 'Tarefa não encontrada.' };
         }   
 
-        const validUser = await isValidUser(task[0].id, userId);
+        const validUser = await isValidUserByTaskId(task[0].id, userId);
 
         if(!validUser || validUser.status >= 400){
             return { status: 403, message: 'Usuário inválido.' };
@@ -200,7 +210,7 @@ export const restoreTask = async (taskId: number, userId: number): Promise<any> 
             return { status: 404, message: 'Tarefa não encontrada.' };
         }
 
-        const validUser = await isValidUser(task[0].id, userId);
+        const validUser = await isValidUserByTaskId(task[0].id, userId);
 
         if(!validUser || validUser.status >= 400){
             return { status: 403, message: 'Usuário inválido.' };
