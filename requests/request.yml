@@ -407,7 +407,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZmMyNWVkMjg2ZGQ4ZTMxZTI3NjEyMSIsImlhdCI6MTc2MTM1NTI0NSwiZXhwIjoxNzYxNDQxNjQ1fQ.f5y7WupHa0m_lQIBcKfHq6q6NdU7ujjiK4_GbPG8lCM",
+											"value": "{{userToken}}",
 											"type": "string"
 										}
 									]
@@ -421,7 +421,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\n    \"title\": \"Tarefa1\",\n    \"description\": \"teste\",\n    \"userId\": \"68fc25ed286dd8e31e276121\"\n\n}"
+									"raw": "{\n\n    \"title\": \"Tarefa2\",\n    \"description\": \"e do usuario 2\",\n    \"userId\": 2\n\n}"
 								},
 								"url": {
 									"raw": "{{base_url}}/api/tasks",
