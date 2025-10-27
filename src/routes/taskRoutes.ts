@@ -54,17 +54,17 @@ router.post('/tasks', taskController.CreateTask);
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: filter
+ *       - in: query
  *         name: completed
  *         schema:
  *           type: boolean
  *         required: false
- *       - in: filter
+ *       - in: query
  *         name: title
  *         schema:
  *           type: string
  *         required: false
- *       - in: filter
+ *       - in: query
  *         name: description
  *         schema:
  *           type: string

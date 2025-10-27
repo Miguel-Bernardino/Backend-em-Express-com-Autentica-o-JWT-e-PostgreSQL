@@ -7,7 +7,6 @@ import db from "./models/index.js";
 import { errorHandler } from './middleware/errorMiddlleware.js';
 import protectedRoute from "./routes/protectedRoute.js";
 import taskRoutes from "./routes/taskRoutes.js";
-import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './swagger.js';
 
 const app = express();
@@ -60,7 +59,7 @@ app.get('/api-docs/swagger.json', (_req: Request, res: Response) => {
 });
 
 // Swagger UI via CDN (compatível com Vercel)
-app.get('/docs', (_req: Request, res: Response) => {
+app.get(['/docs', '/api-docs'], (_req: Request, res: Response) => {
   res.setHeader('Content-Type', 'text/html');
   res.send(`<!doctype html>
   <html lang="pt-br">
