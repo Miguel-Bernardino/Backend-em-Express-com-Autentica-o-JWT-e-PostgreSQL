@@ -1,4 +1,9 @@
 import swaggerJSDoc from 'swagger-jsdoc';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Detecta a URL de produção do Vercel automaticamente
 const productionUrl = process.env.VERCEL_URL 
@@ -28,12 +33,12 @@ const options = {
     ]
   },
   // paths to files containing OpenAPI definitions (JSDoc)
-  // Escaneia tanto .ts (sem build) quanto .js (com build) para funcionar em dev e produção
+  // Usa caminhos absolutos para funcionar no Vercel
   apis: [
-    './src/routes/*.ts',
-    './src/controllers/*.ts',
-    './dist/routes/*.js',
-    './dist/controllers/*.js'
+    join(__dirname, 'routes', '*.ts'),
+    join(__dirname, 'controllers', '*.ts'),
+    join(__dirname, 'routes', '*.js'),
+    join(__dirname, 'controllers', '*.js')
   ]
 };
 
