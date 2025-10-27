@@ -41,7 +41,7 @@ app.get("/", (req: Request, res: Response) => {
   
   res.status(200).json({ 
 
-    message: '🚀 Projeto Backend em Express com Autenticação JWT e MongoDB funcionando!',
+    message: '🚀 Projeto Backend em Express com Autenticação JWT e PostgreSQL funcionando!',
     status: 'WORKING',
   
   });
@@ -49,23 +49,53 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 // Rotas
-// Rota para servir a spec JSON diretamente (útil para debugging)
-app.get('/api-docs.json', (req: Request, res: Response) => {
+// Rota para servir a spec JSON diretamente (útil para debugging e Vercel)
+app.get('/api-docs.json', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+app.get('/api-docs/swagger.json', (_req: Request, res: Response) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
 
-// Swagger UI (rota /docs) - com configurações para Vercel
-const swaggerUiOptions = {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'MiniProjeto API Docs',
-  swaggerOptions: {
-    persistAuthorization: true,
-  }
-};
-
-app.use('/docs', swaggerUi.serve);
-app.get('/docs', swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+// Swagger UI via CDN (compatível com Vercel)
+app.get('/docs', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(`<!doctype html>
+  <html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MiniProjeto API Docs</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui.css" />
+    <style>
+      html { box-sizing: border-box; overflow-y: scroll; }
+      *, *:before, *:after { box-sizing: inherit; }
+      body { margin: 0; padding: 0; }
+      .swagger-ui .topbar { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-standalone-preset.js"></script>
+    <script>
+      window.onload = function () {
+        const ui = SwaggerUIBundle({
+          url: window.location.origin + '/api-docs/swagger.json',
+          dom_id: '#swagger-ui',
+          deepLinking: true,
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+          layout: 'StandaloneLayout'
+        });
+        window.ui = ui;
+      };
+    </script>
+  </body>
+  </html>`);
+});
 
 app.use('/api', userRoutes);
 app.use('/api', protectedRoute);
