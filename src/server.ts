@@ -6,6 +6,8 @@ import db from "./models/index.js";
 import { errorHandler } from './middleware/errorMiddlleware.js';
 import protectedRoute from "./routes/protectedRoute.js";
 import taskRoutes from "./routes/taskRoutes.js";
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './swagger.js';
 
 const app = express();
 
@@ -42,6 +44,9 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 // Rotas
+// Swagger UI (rota /docs)
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.use('/api', userRoutes);
 app.use('/api', protectedRoute);
 app.use('/api', taskRoutes);
