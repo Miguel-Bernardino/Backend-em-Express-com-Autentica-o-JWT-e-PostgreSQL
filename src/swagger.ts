@@ -28,10 +28,13 @@ const options = {
     ]
   },
   // paths to files containing OpenAPI definitions (JSDoc)
-  // Use .js para produção (após build) e .ts para dev
-  apis: process.env.NODE_ENV === 'production' 
-    ? ['./dist/routes/*.js', './dist/controllers/*.js']
-    : ['./src/routes/*.ts', './src/controllers/*.ts']
+  // Escaneia tanto .ts (sem build) quanto .js (com build) para funcionar em dev e produção
+  apis: [
+    './src/routes/*.ts',
+    './src/controllers/*.ts',
+    './dist/routes/*.js',
+    './dist/controllers/*.js'
+  ]
 };
 
 export const swaggerSpec = swaggerJSDoc(options);
