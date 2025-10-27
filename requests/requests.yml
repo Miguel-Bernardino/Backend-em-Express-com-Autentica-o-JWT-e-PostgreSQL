@@ -168,6 +168,16 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{userToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -421,7 +431,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\n    \"title\": \"Tarefa2\",\n    \"description\": \"e do usuario 2\",\n    \"userId\": 2\n\n}"
+									"raw": "{\n\n    \"title\": \"Tarefa2\",\n    \"description\": \"e do usuario 2\",\n    \"userId\": 1\n\n}"
 								},
 								"url": {
 									"raw": "{{base_url}}/api/tasks",
@@ -583,10 +593,10 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"userId\" : \"68fc25ed286dd8e31e276121\"\n}"
+									"raw": "{\n\n}"
 								},
 								"url": {
-									"raw": "{{base_url}}/api/tasks?title=Tarefa3",
+									"raw": "{{base_url}}/api/tasks?completed=false",
 									"host": [
 										"{{base_url}}"
 									],
@@ -597,12 +607,12 @@
 									"query": [
 										{
 											"key": "title",
-											"value": "Tarefa3"
+											"value": "Tarefa3",
+											"disabled": true
 										},
 										{
 											"key": "completed",
-											"value": "false",
-											"disabled": true
+											"value": "false"
 										},
 										{
 											"key": "completed",
@@ -784,7 +794,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"title\": \"Tarefa3\",\n    \"description\": \"teste2\",\n    \"userId\": \"moovo\"\n}"
+									"raw": "{\n    \"title\": \"Tarefa3\",\n    \"description\": \"teste2\",\n    \"userId\": \"\"\n}"
 								},
 								"url": {
 									"raw": "{{base_url}}/api/tasks/:id",
@@ -887,7 +897,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "68fc2610286dd8e31e276124"
+											"value": "1"
 										}
 									]
 								}
