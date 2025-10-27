@@ -19,20 +19,23 @@ app.use(cors()); // Habilita CORS para todos os recursos
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Conectar ao banco PostgreSQL Atlas
-try {
+// Conectar ao banco PostgreSQL - com tratamento para Vercel
+const connectDB = async () => {
+  try {
+    await db.sequelize.authenticate();
+    await db.sequelize.sync(); 
+    console.log("Database connected and synced.");
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
+    // No Vercel, não encerra o processo - permite que funções serverless tentem reconectar
+    if (process.env.VERCEL !== '1') {
+      process.exit(1);
+    }
+  }
+};
 
-  await db.sequelize.authenticate();
-  await db.sequelize.sync(); 
-  console.log("Database connected and synced.");
-
-} catch (err) {
-  console.error("Unable to connect to the database:", err);
-  process.exit(1);
-}
-
-// Porta definida no .env ou 3000 por padrão
-const PORT = process.env.PORT || 3000;
+// Conecta ao banco
+await connectDB();
 
 app.get("/", (req: Request, res: Response) => {
   
@@ -71,7 +74,13 @@ app.use('/api', taskRoutes);
 // Middleware de tratamento de erros
 app.use(errorHandler);
 
-// Inicializa o servidor Express
-app.listen(PORT, () => {
-  console.log(`✅ Servidor rodando na porta ${PORT}`);
-});
+// Exporta o app para Vercel (serverless)
+export default app;
+
+// Inicializa o servidor Express apenas se não estiver no Vercel
+if (process.env.VERCEL !== '1') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`✅ Servidor rodando na porta ${PORT}`);
+  });
+}

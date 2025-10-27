@@ -1,63 +1,66 @@
 # Configuração do Swagger para Vercel
 
-## Problema
-O Swagger UI pode não renderizar corretamente no Vercel devido a limitações de funções serverless e carregamento de recursos estáticos.
+## Problema Resolvido ✅
+O erro `404: NOT_FOUND` no Vercel foi corrigido com as seguintes mudanças:
 
-## Soluções Aplicadas
+### Correções Aplicadas
 
-### 1. Configuração do Swagger UI
-- Separação de `swaggerUi.serve` e `swaggerUi.setup()`
-- Adição de opções customizadas para melhor compatibilidade
-- CSS customizado para ocultar topbar desnecessária
+1. **Exportação do App Express** (`src/server.ts`)
+   - Agora exporta `export default app` para Vercel
+   - O `app.listen()` só executa localmente (não no Vercel)
+   - Vercel detecta automaticamente via `process.env.VERCEL`
 
-### 2. Rota JSON da Spec
-Adicionada rota `/api-docs.json` que serve a especificação OpenAPI em JSON puro.
-Útil para:
-- Debugging
-- Importar em outras ferramentas (Postman, Insomnia)
-- Verificar se a spec está sendo gerada corretamente
+2. **Configuração Vercel Atualizada** (`vercel.json`)
+   - Source aponta para `src/server.ts` (não `dist/`)
+   - Vercel compila TypeScript automaticamente
+   - Build command configurado
 
-### 3. CORS Habilitado
-Adicionado middleware CORS para garantir que recursos sejam carregados corretamente.
+3. **Conexão DB Resiliente**
+   - Não encerra processo em caso de erro no Vercel
+   - Permite que funções serverless tentem reconectar
 
-### 4. Configuração do Vercel
-Criado `vercel.json` com:
-- Build apontando para `dist/server.js`
-- Rotas direcionando tudo para o servidor
-- Variável de ambiente `NODE_ENV=production`
+## Como Configurar no Vercel
 
-### 5. Paths Dinâmicos
-O `swagger.ts` agora detecta o ambiente:
-- **Dev**: lê arquivos `.ts` de `./src/routes/`
-- **Prod**: lê arquivos `.js` de `./dist/routes/`
+### 1. Variáveis de Ambiente
 
-## Como Atualizar a URL do Servidor no Vercel
+Adicione no dashboard do Vercel (Settings → Environment Variables):
 
-Edite `src/swagger.ts` e substitua `https://your-app.vercel.app/api` pela sua URL real do Vercel:
-
-```typescript
-servers: [
-  { url: `http://localhost:${process.env.PORT || 3000}/api`, description: 'Local server' },
-  { url: 'https://SEU-APP.vercel.app/api', description: 'Production server' }
-]
+```
+POSTGRES_USER=seu_usuario
+POSTGRES_PASSWORD=sua_senha
+POSTGRES_DATABASE=postgres
+POSTGRES_HOST=seu_host.com
+POSTGRES_PORT=5432
+JWT_SECRET=sua_chave_secreta_aqui
+NODE_ENV=production
 ```
 
-## Alternativa: Usar Swagger Externo
+⚠️ **IMPORTANTE**: Use um banco PostgreSQL externo (não localhost):
+- Supabase (grátis): https://supabase.com/
+- Neon (grátis): https://neon.tech/
+- Railway (grátis): https://railway.app/
+- Render (grátis): https://render.com/
 
-Se o problema persistir no Vercel, considere:
+### 2. Deploy
 
-1. **Redoc**: UI alternativa mais leve
 ```bash
-npm install redoc-express
+# Instalar Vercel CLI (se ainda não tiver)
+npm i -g vercel
+
+# Login
+vercel login
+
+# Deploy
+vercel --prod
 ```
 
-2. **Swagger Editor Online**: 
-   - Acesse https://editor.swagger.io/
-   - Faça fetch da sua spec em `https://seu-app.vercel.app/api-docs.json`
+### 3. Testando
 
-3. **Deploy separado do Swagger UI**:
-   - Use GitHub Pages ou Netlify para hospedar apenas a UI
-   - Configure para consumir sua API
+Após deploy, acesse:
+- Raiz: `https://seu-app.vercel.app/`
+- Swagger UI: `https://seu-app.vercel.app/docs`
+- Spec JSON: `https://seu-app.vercel.app/api-docs.json`
+- API: `https://seu-app.vercel.app/api/login`
 
 ## Testando Localmente
 
@@ -74,28 +77,87 @@ Acesse:
 - UI: http://localhost:3000/docs
 - Spec JSON: http://localhost:3000/api-docs.json
 
-## Deploy no Vercel
+## Estrutura de Arquivos para Vercel
 
-```bash
-# Fazer build antes do deploy
-npm run build
-
-# Garantir que dist/ existe e vercel.json está configurado
-vercel --prod
+```
+projeto/
+├── src/
+│   ├── server.ts          ← Entry point (exporta app)
+│   ├── swagger.ts         ← Config do Swagger
+│   ├── routes/            ← Rotas com JSDoc
+│   └── ...
+├── vercel.json            ← Config do Vercel
+├── .vercelignore          ← Arquivos ignorados
+├── package.json
+└── tsconfig.json
 ```
 
 ## Troubleshooting
 
-### Swagger UI carrega mas sem estilos
-- Verifique se CORS está habilitado
-- Confirme que `swaggerUi.serve` está antes de `setup()`
+### Erro 404: NOT_FOUND
+✅ **Resolvido** - `server.ts` agora exporta o app corretamente
 
-### Rotas não aparecem na UI
-- Verifique `api-docs.json` para ver se a spec foi gerada
-- Confirme que os comentários JSDoc estão corretos
-- Em produção, verifique se os arquivos `.js` existem em `dist/`
+### Banco de dados não conecta
+- Verifique se as variáveis de ambiente estão corretas no Vercel
+- Use um banco PostgreSQL externo (não localhost)
+- Teste a conexão localmente primeiro com as mesmas credenciais
 
-### Erro 404 no /docs
-- Confirme que o servidor está rodando
-- Verifique logs do Vercel para erros de build
-- Teste localmente primeiro com `NODE_ENV=production npm start`
+### Swagger UI sem estilos
+- Verifique `/api-docs.json` - se funcionar, o problema é só CSS
+- Tente limpar cache do navegador
+- Use rota alternativa: `https://editor.swagger.io/` + importe `/api-docs.json`
+
+### Rotas não aparecem
+- Confirme que JSDoc está correto nos arquivos de rotas
+- Verifique se `src/routes/*.ts` tem os comentários `@openapi`
+- Acesse `/api-docs.json` para ver se a spec foi gerada
+
+### Timeout no Vercel
+- Funções serverless no Vercel têm limite de 10s (free tier)
+- Otimize queries do banco
+- Considere usar cache
+
+## Alternativas ao Swagger UI no Vercel
+
+Se ainda houver problemas com UI:
+
+### 1. Redoc (mais leve)
+```bash
+npm install redoc-express
+```
+
+```typescript
+import redoc from 'redoc-express';
+
+app.get('/docs', redoc({
+  title: 'MiniProjeto API',
+  specUrl: '/api-docs.json'
+}));
+```
+
+### 2. Swagger Editor Online
+- Acesse: https://editor.swagger.io/
+- Importe: `https://seu-app.vercel.app/api-docs.json`
+
+### 3. Postman/Insomnia
+- Importe a collection via `/api-docs.json`
+
+## Monitoramento
+
+Logs do Vercel:
+```bash
+vercel logs
+```
+
+Ou veja no dashboard: https://vercel.com/dashboard
+
+## Checklist de Deploy
+
+- [ ] Variáveis de ambiente configuradas no Vercel
+- [ ] Banco PostgreSQL externo configurado
+- [ ] `vercel.json` presente no projeto
+- [ ] `server.ts` exporta o app
+- [ ] Build local funciona (`npm run build`)
+- [ ] Testado localmente com `NODE_ENV=production`
+- [ ] Deploy executado (`vercel --prod`)
+- [ ] Rotas `/docs` e `/api-docs.json` funcionando

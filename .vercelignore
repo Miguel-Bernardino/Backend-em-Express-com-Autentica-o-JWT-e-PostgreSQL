@@ -1,0 +1,14 @@
+node_modules
+.env
+.env.local
+.git
+.gitignore
+README.md
+SWAGGER_VERCEL.md
+*.md
+.vscode
+.idea
+tsconfig copy.json
+docker-compose.yml
+Dockerfile
+requests
