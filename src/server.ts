@@ -1,6 +1,7 @@
 // src/index.ts
 import dotenv from "dotenv";
 import express, { Request, Response } from "express";
+import cors from "cors";
 import userRoutes from './routes/userRoutes.js';
 import db from "./models/index.js";
 import { errorHandler } from './middleware/errorMiddlleware.js';
@@ -14,6 +15,7 @@ const app = express();
 dotenv.config(); // ← Carrega as variáveis do .env
 
 // Middlewares globais
+app.use(cors()); // Habilita CORS para todos os recursos
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -44,8 +46,23 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 // Rotas
-// Swagger UI (rota /docs)
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Rota para servir a spec JSON diretamente (útil para debugging)
+app.get('/api-docs.json', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
+// Swagger UI (rota /docs) - com configurações para Vercel
+const swaggerUiOptions = {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'MiniProjeto API Docs',
+  swaggerOptions: {
+    persistAuthorization: true,
+  }
+};
+
+app.use('/docs', swaggerUi.serve);
+app.get('/docs', swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 
 app.use('/api', userRoutes);
 app.use('/api', protectedRoute);
