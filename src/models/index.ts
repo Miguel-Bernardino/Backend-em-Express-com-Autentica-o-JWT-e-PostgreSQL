@@ -28,6 +28,8 @@ const sequelize = new Sequelize(
             rejectUnauthorized: false
           }
         } : undefined,
+        // Control SQL logging via env var SQL_LOGGING. Default: false (quiet)
+        logging: process.env.SQL_LOGGING === 'true' ? console.log : false,
     }
 );
 

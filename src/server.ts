@@ -22,25 +22,7 @@ const allowedOrigins = [
   process.env.PRODUCTION_URL,
 ].filter(Boolean) as string[];
 
-const corsOptions: import('cors').CorsOptions = {
-  origin: (origin, callback) => {
-    // Permite requests sem origem (como ferramentas de linha de comando, servidores)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Para debugging em ambientes que bloqueiam, permite origin '*' se variável de ambiente setar
-    if (process.env.ALLOW_ALL_ORIGINS === 'true') return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-};
-
-app.use(cors(corsOptions)); // Habilita CORS com opções
-// Responder preflight para todas rotas
-app.options('*', cors(corsOptions));
+app.use(cors()); // Habilita CORS com opções
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -59,8 +41,11 @@ const connectDB = async () => {
   }
 };
 
-// Conecta ao banco
+// Conecta ao banco.
+// Comportamento:
+
 await connectDB();
+
 
 app.get("/", (req: Request, res: Response) => {
   
