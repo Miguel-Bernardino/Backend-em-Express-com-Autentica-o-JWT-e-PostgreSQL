@@ -14,7 +14,33 @@ const app = express();
 dotenv.config(); // ← Carrega as variáveis do .env
 
 // Middlewares globais
-app.use(cors()); // Habilita CORS para todos os recursos
+// Configuração de CORS mais segura e configurável
+const allowedOrigins = [
+  `http://localhost:${process.env.PORT || 3000}`,
+  // Vercel fornece VERCEL_URL sem protocolo
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+  process.env.PRODUCTION_URL,
+].filter(Boolean) as string[];
+
+const corsOptions: import('cors').CorsOptions = {
+  origin: (origin, callback) => {
+    // Permite requests sem origem (como ferramentas de linha de comando, servidores)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Para debugging em ambientes que bloqueiam, permite origin '*' se variável de ambiente setar
+    if (process.env.ALLOW_ALL_ORIGINS === 'true') return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions)); // Habilita CORS com opções
+// Responder preflight para todas rotas
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
